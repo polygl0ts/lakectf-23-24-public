@@ -1,0 +1,12 @@
+FROM ubuntu:22.04 
+
+RUN apt-get update
+RUN apt-get install docker.io socat python3 python3-pip -y
+RUN pip3 install docker
+
+COPY wrapper_start.sh /
+COPY shell.py /
+EXPOSE 9002
+
+ENTRYPOINT ["/wrapper_start.sh"]
+

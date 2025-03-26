@@ -1,0 +1,51 @@
+{% extends "layout.html" %}
+ 
+{% block content %}
+ 
+  <p class="title is-1" style="text-align: center;">Reset Password</p>
+
+    <form method="post">
+        {% if md5_uuid %}
+        <div class="field">
+            <label class="label">OTP</label>
+            <p class="control has-icons-left">
+              <input class="input" type="text" placeholder="000000" name="otp">
+              <span class="icon is-small is-left">
+                <i class="fas fa-lock"></i>
+              </span>
+            </p>
+          </div>
+        {% else %}
+        <div class="field">
+            <label class="label">Username</label>
+            <div class="control has-icons-left has-icons-right">
+              <input class="input is-success" type="text" placeholder="Username" name="username">
+              <span class="icon is-small is-left">
+                <i class="fas fa-user"></i>
+              </span>
+            </div>
+          </div>
+        {% endif %}
+        
+        <p>
+          <div class="control">
+            <button type="submit" class="button is-primary">Submit</button>
+          </div>
+
+          {% if success %}
+            <div class="notification is-success is-light">
+              {{ success }}
+            </div>
+          {% endif %}
+    
+        {% if error %}
+          <div class="notification is-danger is-light">
+            {{ error }}
+          </div>
+        {% endif %}
+
+
+    </form>
+    You are already Register ? <a href="/login">login</a>
+
+{% endblock %}

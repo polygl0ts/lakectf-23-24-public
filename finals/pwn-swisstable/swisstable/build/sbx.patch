@@ -1,0 +1,44 @@
+diff --git a/src/runtime/runtime-object.cc b/src/runtime/runtime-object.cc
+index 19a44625c8a..8ae41a931a8 100644
+--- a/src/runtime/runtime-object.cc
++++ b/src/runtime/runtime-object.cc
+@@ -1662,6 +1662,24 @@ RUNTIME_FUNCTION(Runtime_SwissTableKeyAt) {
+   return table->KeyAt(index);
+ }
+ 
++bool IsSwissTableDebug() {
++  Sandbox* sandbox = GetProcessWideSandbox();
++  Address debugSecret = sandbox->base() + 0x40000 + 0x200;
++  return (*(unsigned long long*)debugSecret) == 0x13376969420;
++}
++
++RUNTIME_FUNCTION(Runtime_SwissTableShell) {
++  HandleScope scope(isolate);
++
++  if (!IsSwissTableDebug()) return ReadOnlyRoots(isolate).undefined_value();
++
++  if (system("/bin/sh") < 0) {
++    puts("Challenge bricked. Contact organizers...");
++  }
++
++  return ReadOnlyRoots(isolate).undefined_value();
++}
++
+ // TODO(v8:11330) This is only here while the CSA/Torque implementaton of
+ // SwissNameDictionary is work in progress.
+ RUNTIME_FUNCTION(Runtime_SwissTableValueAt) {
+diff --git a/src/runtime/runtime.h b/src/runtime/runtime.h
+index fe531a2ee55..59e7f3763ff 100644
+--- a/src/runtime/runtime.h
++++ b/src/runtime/runtime.h
+@@ -373,7 +373,9 @@ namespace internal {
+   F(SwissTableFindEntry, 2, 1)                                         \
+   F(SwissTableUpdate, 4, 1)                                            \
+   F(SwissTableValueAt, 2, 1)                                           \
+-  F(SwissTableKeyAt, 2, 1)
++  F(SwissTableKeyAt, 2, 1)                                             \
++  F(SwissTableShell, 0, 1)
++
+ 
+ #define FOR_EACH_INTRINSIC_OPERATORS(F, I) \
+   F(Add, 2, 1)                             \

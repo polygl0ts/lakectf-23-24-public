@@ -1,0 +1,16 @@
+{% extends "layout.html" %}
+ 
+{% block content %}
+ 
+   {% if session.username %}
+      You are login as <b>{{ session.username }}</b> <a href="/logout">logout</a>.
+   {% else %}
+      You are not login. <a href="/login">login</a>.
+   {% endif %}
+
+   {% if session.username == "admin" %}
+   <div class="notification is-success">
+      <strong>{{ flag }}</strong>
+   </div>
+   {% endif %}
+{% endblock %}

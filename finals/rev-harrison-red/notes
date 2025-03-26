@@ -1,0 +1,48 @@
+
+NOTES:
+ - gcc -ffixed-r13 to avoid using r13 for gcc
+
+
+OVERLAPPING THUMB:
+// this thumb code will look like valid 32bit arm code!
+// b.+4 gets compiled to "00e0" which in arm is opcode for "and"
+// the other two bytes do not really matter
+confused:
+	.thumb_func
+	.force_thumb
+	mov r0, r1
+	b .+4
+	cmp r0, #1
+	b .+4
+
+
+BREAK IDA + GHIDRA:
+Ghidra is broken by the opaque predicate
+Ida Pro is broken by the stack usage (it is important to have one (or more) nops at the start of myprint2)
+
+_start:
+	ldr r10, =myprint2
+	// break ida decompilation
+	push {r10}
+	pop {r10}
+	// opaque predicate for ghidra
+	mul r11, r12, r12
+	add r11, r12
+	ands r11, r11, #1
+	beq .+8 // always false
+		mov r10, r11
+	add r10, #5
+	bx r10
+
+myprint2:
+	.thumb
+	nop // fake ins
+	nop // fake ins
+
+	.thumb_func
+	ldr r0, =print2
+	blx r0
+
+
+
+

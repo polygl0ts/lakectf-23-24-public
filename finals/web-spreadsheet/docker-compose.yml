@@ -1,0 +1,23 @@
+services:
+  spreadsheet-web:
+    build: ./spreadsheet-web
+    environment:
+      - BOT_KEY=922133e2e7ef786dc7bf0c1e45b65a465ee1e5f0adc5291c89f2912562573ff75d6cdf8c3f6fcc19bb0ff0113389a34ce7c629812f903439f212ef018b68c89b
+    ports:
+      - 12012:8888
+    networks:
+      - spreadsheet
+  spreadsheet-bot:
+    build: ./spreadsheet-bot
+    environment:
+      - BOT_KEY=922133e2e7ef786dc7bf0c1e45b65a465ee1e5f0adc5291c89f2912562573ff75d6cdf8c3f6fcc19bb0ff0113389a34ce7c629812f903439f212ef018b68c89b
+    networks:
+      - spreadsheet
+  redis:
+    image: "redis:7.2.4-alpine"
+    networks:
+      - spreadsheet
+
+networks:
+  spreadsheet:
+    name: spreadsheet-network

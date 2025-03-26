@@ -1,0 +1,14 @@
+FROM aflplusplus/aflplusplus as builder
+
+RUN useradd -u 1000 ctf
+
+RUN mkdir /app
+
+WORKDIR /app
+
+COPY run.py /app/run
+COPY seccomp_pre.so /app/
+COPY flag /app/flag
+
+RUN chmod 755 /app/run /app/seccomp_pre.so
+RUN chmod 744 /app/flag

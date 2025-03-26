@@ -1,0 +1,25 @@
+services:
+  redis:
+    container_name: library-redis
+    image: "redis:6-alpine"
+
+  web:
+    container_name: library-web
+    build:
+      context: .
+      dockerfile: Dockerfile.web
+    environment:
+      - FLAG=EPFL{What?!_F1r3f0x_d0esn't_us3_SOP_f0r_W3bS0ck3ts?!}
+    depends_on:
+      - redis
+    ports:
+      - "9010:8080"
+
+  bot:
+    platform: linux/amd64
+    build:
+      context: .
+      dockerfile: Dockerfile.bot
+    shm_size: 2gb
+    depends_on:
+      - redis

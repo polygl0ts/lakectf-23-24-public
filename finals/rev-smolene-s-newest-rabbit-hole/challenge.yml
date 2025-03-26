@@ -1,0 +1,59 @@
+# This file represents the base specification of your challenge. It is used by
+# other tools to install and deploy your challenge.
+
+# Required sections
+name: "smolene's newest rabbit hole"
+author: "smolene"
+category: rev
+description: "The strongest flagchecker under the moon... Its source leaked, but even then, you will never be able to find the flag... Glory to King Psyduck!\n<br>\nNOTE: if you get an error along the lines of `VulkanError ... blabla ... could not submit CommandBuffer with usage OneTimeSubmit ...`, pass the cli flag `--wait=10000` to the program. A shorter wait will make the program slower, but will increase the chance that the program runs without crashing.\n<br>\nNOTE: if the program complains that `the requested version of Vulkan is not supported by the driver`, please install the vulkan packages for your distro (on arch, `vulkan-intel`, `vulkan-radeon` or `nvidia-utils` + (for every card) `vulkan-icd-loader`)."
+value: 100
+type: dynamic
+
+# The extra field provides additional fields for data during the install/sync commands/
+# Fields in extra can be used to supply additional information for other challenge types
+# For example the follow extra field is for dynamic challenges. To use these following
+# extra fields, set the type to "dynamic" and uncomment the "extra" section below
+extra:
+    initial: 500
+    decay: 9
+    minimum: 100
+
+# No deployment needed
+# Settings used for Dockerfile deployment
+# If not used, remove or set to null
+# If you have a Dockerfile set to .
+# If you have an imaged hosted on Docker set to the image url (e.g. python/3.8:latest, registry.gitlab.com/python/3.8:latest)
+# Follow Docker best practices and assign a tag
+# image: .
+# Specify a host to deploy the challenge onto.
+# The currently supported URI schemes are ssh:// and registry://
+# ssh is an ssh URI where the above image will be copied to and deployed (e.g. ssh://root@123.123.123.123)
+# registry is a Docker registry tag (e.g registry://registry.example.com/test/image)
+# host can also be specified during the deploy process: `ctf challenge deploy challenge --host=ssh://root@123.123.123.123`
+host: null
+
+# Optional settings
+state: visible
+# No connection needed
+# connection_info is used to provide a link, hostname, or instructions on how to connect to a challenge
+# connection_info: nc chall.polygl0ts.ch 38000
+
+# healthcheck is a tool/script used to check a challenge
+# If connection_info was provided to CTFd when the challenge was installed, it will be passed to the healthcheck script:
+# ./writeup/exploit.sh --connection-info "nc chall.polygl0ts.ch 12345"
+# healthcheck: ./exploit.py # This might not be a great health check since it only succeeds with probability < 1
+
+# Flags specify answers that your challenge use. You should generally provide at least one.
+# Can be removed if unused
+# Accepts strings or dictionaries of CTFd API data
+flags:
+  - "EPFL{1t-s-1Nt3rPr3teR5-4l1-tH3-W4y-D0wN-p5yDuCk-0ur-k1ng-n0w-4nd-f0rev3r}"
+
+files:
+  - gpgpu
+  - source.tar
+
+# Specifies what version of the challenge specification was used.
+# Subject to change until ctfcli v1.0.0
+version: "0.1"
+

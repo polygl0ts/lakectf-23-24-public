@@ -1,0 +1,7 @@
+services:
+  web-unguessable-uuid:
+    build: ./app
+    ports:
+      - "12004:12004"
+    environment:
+      - FLAG=EPFL{Y0u_mu5t_h4v3_v3ry_g00d_intuiti0n_t0_gu3ss_th1s_uu1d}

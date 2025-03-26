@@ -1,0 +1,14 @@
+version: "3"
+services:
+  challenge:
+    build:
+      context: .
+    command: sh -c "python3 -u challenge/proxy.py & python3 -u challenge/challenge.py"
+    expose:
+      - 12014
+      - 12015
+    ports:
+      - "12014:12014"
+      - "12015:12015"
+    environment:
+      - "PUBLIC_HOST=http://challs.polygl0ts.ch:12015"

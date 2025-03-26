@@ -1,0 +1,3 @@
+#!/bin/sh
+rm -f pingpong.zip
+zip -r pingpong.zip local setup.sh Dockerfile compose.yml

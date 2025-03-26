@@ -1,0 +1,16 @@
+# Ignore sdkconfigs
+sdkconfig
+sdkconfig.old
+
+# Ignore dependency locks
+dependencies.lock
+
+# Ignore build directory and downloaded components
+src/build
+src/managed_components
+
+# Ignore handouts apart from the one that needs to go onto the server
+# (just regenerate the other ones with `make handout` if necessary)
+handout/*
+!handout/lakectf-ios-0.bin
+!handout/lakectf-ios-0.elf

@@ -1,0 +1,22 @@
+predicate always diablo2a(reg_a: r64, reg_b: r64) {
+   /* 1) 2|x+x^2 {{{ */
+   andq         $32767,%reg_a
+   /* Opaque predicate*/
+   movq         %reg_a, %reg_b
+   imulq        %reg_a, %reg_b
+   addq         %reg_b, %reg_a
+   andq         $1, %reg_a
+   jz DESYNC
+}
+
+predicate never diablo2n(reg_a: r64, reg_b: r64) {
+   /* 1) 2|x+x^2 {{{ */
+   andq         $32767,%reg_a
+   /* Opaque predicate*/
+   movq         %reg_a, %reg_b
+   imulq        %reg_a, %reg_b
+   addq         %reg_b, %reg_a
+   andq         $1, %reg_a
+   ja DESYNC
+}
+

@@ -1,0 +1,43 @@
+{% extends "base.jinja2" %}
+{% block content %}
+    <h1>Spreadsheet</h1>
+    <form method="POST" onsubmit=calculate()>
+        <div class="table-responsive mb-1">
+            <table class="table-bordered">
+                {% for row in reader %}
+                <tr>
+                    {% for entry in row[:10] %}
+                    <td> {% if entry == '[INPUT]' %}<input name="value" class="form-control">{% else %}<p class="cell">{{ entry }}</p>{% endif %}</td>
+                    {% endfor %}
+                </tr>
+                {% endfor %}
+            </table>
+        </div>
+        <div class="d-flex justify-content-center">
+            <input class="btn btn-primary w-25" type="submit" value="Calculate">
+            <a class="btn btn-secondary w-25" href='/visit/{{ sheetname }}'>Send to Admin</a>
+        </div>
+    </form>
+    {% include 'upgrade.jinja2' %}
+
+    <script>
+        function calculate(e) {
+            let rows = document.querySelectorAll('tr');
+            let inputs = document.querySelectorAll('input');
+            for (let input of inputs) {
+                let content = input.value;            
+                if(content.startsWith('=')){
+                    content = content.substring(1);
+                    content = content.replaceAll(/[A-Z][0-9]/g, match => {
+                        let column = match.charCodeAt(0) - 'A'.charCodeAt(0);
+                        let row = match.charCodeAt(1) - '0'.charCodeAt(0);
+                        let elem = rows[row].querySelectorAll('td')[column]
+                        let referenceValue = parseFloat(elem.innerText != '' ? elem.innerText : elem.querySelector('input').value);
+                        return referenceValue;
+                    })
+                    input.value = eval(content);
+                }
+            }
+        }
+    </script>
+{% endblock %}

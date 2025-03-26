@@ -1,0 +1,17 @@
+services:
+  vimjail:
+    build: .
+    ports:
+      - 9024:22
+    cap_drop:
+      - all
+    cap_add:
+      - sys_admin
+      - net_bind_service
+      - setuid
+      - setgid
+      - chown
+    security_opt:
+      - apparmor=unconfined
+      - seccomp=unconfined
+      - systempaths=unconfined

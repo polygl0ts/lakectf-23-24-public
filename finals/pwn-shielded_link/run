@@ -1,0 +1,3 @@
+#!/bin/sh
+
+LD_LIBRARY_PATH=. LD_PRELOAD=./libscudo-linux.so ./ld-linux-x86-64.so.2 ./link

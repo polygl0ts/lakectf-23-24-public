@@ -1,0 +1,60 @@
+# This file represents the base specification of your challenge. It is used by
+# other tools to install and deploy your challenge.
+
+# Required sections
+name: "scanf-beep-boop"
+author: "skuuk"
+category: pwn
+description: "these absurdly restricted write primitive challenges never get old"
+value: 100
+type: dynamic
+
+# The extra field provides additional fields for data during the install/sync commands/
+# Fields in extra can be used to supply additional information for other challenge types
+# For example the follow extra field is for dynamic challenges. To use these following
+# extra fields, set the type to "dynamic" and uncomment the "extra" section below
+extra:
+    initial: 500
+    decay: 9
+    minimum: 100
+
+# Settings used for Dockerfile deployment
+# If not used, remove or set to null
+# If you have a Dockerfile set to .
+# If you have an imaged hosted on Docker set to the image url (e.g. python/3.8:latest, registry.gitlab.com/python/3.8:latest)
+# Follow Docker best practices and assign a tag
+image: .
+# Specify a host to deploy the challenge onto.
+# The currently supported URI schemes are ssh:// and registry://
+# ssh is an ssh URI where the above image will be copied to and deployed (e.g. ssh://root@123.123.123.123)
+# registry is a Docker registry tag (e.g registry://registry.example.com/test/image)
+# host can also be specified during the deploy process: `ctf challenge deploy challenge --host=ssh://root@123.123.123.123`
+host: null
+
+# Optional settings
+state: visible
+# connection_info is used to provide a link, hostname, or instructions on how to connect to a challenge
+connection_info: nc chall.polygl0ts.ch 12001
+
+# healthcheck is a tool/script used to check a challenge
+# If connection_info was provided to CTFd when the challenge was installed, it will be passed to the healthcheck script:
+# ./writeup/exploit.sh --connection-info "nc chall.polygl0ts.ch 12345"
+# healthcheck: ./exploit.py # This might not be a great health check since it only succeeds with probability < 1
+
+# Flags specify answers that your challenge use. You should generally provide at least one.
+# Can be removed if unused
+# Accepts strings or dictionaries of CTFd API data
+flags:
+  - "EPFL{1101011011000110110100101110010011101000101111101110000011011110111001101100110010111110110010101101110011011110101111101110011011010010110100001110100010111110110010101110100011000010110100001011111011100110111001001100101011011100111011101110000}"
+
+files:
+    - Dockerfile
+    - run
+    - ld-linux-x86-64.so.2
+    - libc.so.6
+    - compose.yaml
+
+# Specifies what version of the challenge specification was used.
+# Subject to change until ctfcli v1.0.0
+version: "0.1"
+

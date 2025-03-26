@@ -1,0 +1,86 @@
+menu "IoS Configuration"
+
+    orsource "$IDF_PATH/examples/common_components/env_caps/$IDF_TARGET/Kconfig.env_caps"
+
+    config FLAG
+        string "Flag"
+        default "EPFL{test_flag}"
+        help
+            The flag for the challenge
+
+    menu "SoftAP Configuration"
+        comment "SoftAP Configuration"
+
+        config ESP_WIFI_AP_SSID
+            string "WiFi AP SSID"
+            default "myssid"
+            help
+                SSID (network name) of the AP for the example to connect to.
+
+        config ESP_WIFI_AP_PASSWORD
+            string "WiFi AP Password"
+            default "mypassword"
+            help
+                WiFi password of the AP for the example to use.
+
+        config ESP_WIFI_AP_CHANNEL
+            int "WiFi AP Channel"
+            range 1 14
+            default 1
+            help
+                WiFi channel (network channel) of the AP for the example to use.
+
+        config ESP_MAX_STA_CONN_AP
+            int "Maximal STA connections"
+            default 4
+            help
+                Max number of the STA connects to AP.
+    endmenu
+
+    menu "TCP server Configuration"
+
+        config PORT
+            int "Port"
+            range 0 65535
+            default 3333
+            help
+                Local port the server will listen on.
+
+        config KEEPALIVE_IDLE
+            int "TCP keep-alive idle time(s)"
+            default 5
+            help
+                Keep-alive idle time. In idle time without receiving any data from peer, will send keep-alive probe packet
+
+        config KEEPALIVE_INTERVAL
+            int "TCP keep-alive interval time(s)"
+            default 5
+            help
+                Keep-alive probe packet interval time.
+
+        config KEEPALIVE_COUNT
+            int "TCP keep-alive packet retry send counts"
+            default 3
+            help
+                Keep-alive probe packet retry count.
+    endmenu
+
+    menu "Display Configuration"
+
+        config SDA_GPIO
+            int "I2C SDA GPIO number"
+            range ENV_GPIO_RANGE_MIN ENV_GPIO_RANGE_MAX
+            default 2
+            help
+                GPIO number (IOxx) to use for I2C's data line
+
+        config SCL_GPIO
+            int "I2C SCL GPIO number"
+            range ENV_GPIO_RANGE_MIN ENV_GPIO_RANGE_MAX
+            default 3
+            help
+                GPIO number (IOxx) to use for I2C's clock line
+
+    endmenu
+
+endmenu

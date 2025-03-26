@@ -1,0 +1,16 @@
+# vuln TA
+
+ta_LTLIBRARIES += libvuln_ta.la
+
+libvuln_ta_la_includes = \
+        include/tee_ta_properties.h
+
+libvuln_ta_la_SOURCES = ${libvuln_ta_la_includes} \
+	vuln_ta/vuln_ta.c \
+        vuln_ta/open_tee_conf.c
+
+libvuln_ta_la_CFLAGS = ${AM_CFLAGS} \
+        -iquote $(top_srcdir)/include \
+        -iquote $(top_srcdir)/../emulator/include
+
+libvuln_ta_la_LDFLAGS = ${AM_LDFLAGS}

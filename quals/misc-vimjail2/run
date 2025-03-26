@@ -1,0 +1,9 @@
+#!/bin/bash
+/sbin/sshd &
+
+sleep 1
+
+/bin/sh
+
+socat - tcp:127.0.0.1:9018
+echo wow

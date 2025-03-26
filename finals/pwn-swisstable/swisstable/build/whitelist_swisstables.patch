@@ -1,0 +1,47 @@
+diff --git a/src/common/message-template.h b/src/common/message-template.h
+index 6d630c2f0ba..4ad0a701242 100644
+--- a/src/common/message-template.h
++++ b/src/common/message-template.h
+@@ -594,6 +594,7 @@ namespace internal {
+   T(RestDefaultInitializer,                                                    \
+     "Rest parameter may not have a default initializer")                       \
+   T(RuntimeWrongNumArgs, "Runtime function given wrong number of arguments")   \
++  T(RuntimeForbidden, "Runtime function % is not whitelisted")                 \
+   T(SuperNotCalled,                                                            \
+     "Must call super constructor in derived class before accessing 'this' or " \
+     "returning from derived constructor")                                      \
+diff --git a/src/parsing/parser-base.h b/src/parsing/parser-base.h
+index 78bad16404d..2910829a2ae 100644
+--- a/src/parsing/parser-base.h
++++ b/src/parsing/parser-base.h
+@@ -2110,11 +2110,9 @@ ParserBase<Impl>::ParsePrimaryExpression() {
+     case Token::kTemplateTail:
+       return ParseTemplateLiteral(impl()->NullExpression(), beg_pos, false);
+ 
+-    case Token::kMod:
+-      if (flags().allow_natives_syntax() || impl()->ParsingExtension()) {
+-        return ParseV8Intrinsic();
+-      }
+-      break;
++    case Token::kMod: {
++      return ParseV8Intrinsic();
++    }
+ 
+     default:
+       break;
+@@ -5351,6 +5349,15 @@ typename ParserBase<Impl>::ExpressionT ParserBase<Impl>::ParseV8Intrinsic() {
+   Consume(Token::kMod);
+   // Allow "eval" or "arguments" for backward compatibility.
+   IdentifierT name = ParseIdentifier();
++  const AstRawString* raw_name = impl()->GetRawNameFromIdentifier(name);
++
++  if (strncmp((const char*)raw_name->raw_data(), "SwissTable", 8) != 0 && !flags().allow_natives_syntax()) {
++    impl()->ReportMessageAt(Scanner::Location(pos, pos + 1),
++                            MessageTemplate::kRuntimeForbidden,
++                            raw_name);
++    return impl()->FailureExpression();
++  }
++
+   if (peek() != Token::kLeftParen) {
+     impl()->ReportUnexpectedToken(peek());
+     return impl()->FailureExpression();

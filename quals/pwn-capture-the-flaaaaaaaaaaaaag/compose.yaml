@@ -1,0 +1,17 @@
+services:
+  capture_the_flaaaaaaaaaaaaag:
+    build: .
+    ports:
+      - 9003:5000
+    cap_drop:
+      - all
+    cap_add:
+      - chown
+      - setuid
+      - setgid
+      - sys_admin
+      - mknod
+    security_opt:
+      - apparmor=unconfined
+      - seccomp=unconfined
+      - systempaths=unconfined

@@ -1,0 +1,432 @@
+#define FLAG_SIZE 37
+#define true 1
+#define false 0
+#define __NR_exit 1
+#define __NR_write 4
+#define __NR_read  3
+
+//part one
+// EPFL{On3_Of_My_F1ng3r5_1s_M1ss1ng____
+// I_w0nd3r_why_ARM_ch4ll3ng3s_sUck_oof}
+// EPFL{On3_Of_My_F1ng3r5_1s_M1ss1ng____I_w0nd3r_why_ARM_ch4ll3ng3s_sUck_oof}
+
+
+
+#define THUMB_START \
+    switch_thumb(); \
+    __asm(".make_thumb");
+
+#define THUMB_END \
+    __asm(".align 2"); \
+    unswitch_thumb(); \
+    __asm(".unmake_thumb");
+
+//unsigned char enc_flag[FLAG_SIZE + 1] = {0x64, 0xe7, 0xf9, 0xcc, 0x42, 0x92, 0x36, 0x35, 0x4a, 0x5c, 0x70, 0x32, 0xa4, 0xb8, 0xab, 0xea, 0x2c, 0xc2, 0xe4, 0x74, 0xda, 0xfb, 0x2e, 0xde, 0x87, 0x56, 0xc8, 0x18, 0x41, 0x51, 0xc3, 0x6a, 0x48, 0xfa, 0x9, 0x9f, 0x24};
+
+unsigned char enc_flag[FLAG_SIZE + 1] = {0x64, 0xe7, 0xf9, 0xcc, 0x42, 0x92, 0x36, 0x35, 0x4a, 0x5c, 0x70, 0x32, 0xa4, 0xb8, 0xab, 0xea, 0x2c, 0xc2, 0xe4, 0x74, 0xda, 0xfb, 0x2e, 0xde, 0x87, 0x56, 0xc8, 0x18, 0x41, 0x51, 0xc3, 0x6a, 0x48, 0xde, 0x6d, 0xb3, 0x06};
+
+//unsigned char enc_flag2[FLAG_SIZE + 1] = {0x3d, 0x06, 0x72, 0x5e, 0xfd, 0xfe, 0x03, 0x9b, 0x64, 0x5f, 0x31, 0x5f, 0x31, 0x64, 0x5f, 0x6e, 0x48, 0x22, 0x6b, 0x79, 0x0a, 0x07, 0xbd, 0xb2, 0x5f, 0x6d, 0x52, 0x41, 0x77, 0x34, 0x73, 0x5f, 0x1a, 0x37, 0x50, 0x33, 0xfb};
+unsigned char enc_flag2[FLAG_SIZE + 1] = {0x31, 0x09, 0x43, 0x22, 0x0a, 0xf2, 0x00, 0xa0, 0x79, 0x68, 0x77, 0x5f, 0x5f, 0x41, 0x52, 0x4d, 0x27, 0x35, 0x5c, 0x26, 0x0c, 0xea, 0x00, 0xa4, 0x5f, 0x73, 0x33, 0x67, 0x73, 0x55, 0x63, 0x6b, 0x27, 0x39, 0x5b, 0x74, 0xfb};
+
+
+void switch_thumb() {
+
+        __asm("mov r10, lr\n\t add r10, #1\n\t blx r10");
+}
+
+void unswitch_thumb() {
+        __asm("mov r10, lr\n\t sub r10, #1\n\t blx r10");
+}
+
+int write(int fd, const void *buf, int count) {
+    int ret;
+    asm volatile (
+        "mov r0, %1\n"          // fd
+        "mov r1, %2\n"          // buf
+        "mov r2, %3\n"          // count
+        "mov r7, %4\n"          // syscall number
+        "svc 0x00000000\n"      // invoke syscall
+        "mov %0, r0\n"          // return value
+        : "=r" (ret)
+        : "r" (fd), "r" (buf), "r" (count), "r" (__NR_write)
+        : "r0", "r1", "r2", "r7"
+    );
+    return ret;
+}
+
+int read(int fd, void *buf, int count) {
+    int ret;
+    asm volatile (
+        "mov r0, %1\n"          // fd
+        "mov r1, %2\n"          // buf
+        "mov r2, %3\n"          // count
+        "mov r7, %4\n"          // syscall number
+        "svc 0x00000000\n"      // invoke syscall
+        "mov %0, r0\n"          // return value
+        : "=r" (ret)
+        : "r" (fd), "r" (buf), "r" (count), "r" (__NR_read)
+        : "r0", "r1", "r2"
+    );
+    return ret;
+}
+
+
+void exit(int status) {
+    asm volatile (
+        "mov r0, %0\n"          // status
+        "mov r7, %1\n"          // syscall number for exit
+        "svc 0x00000000\n"      // invoke syscall
+        :
+        : "r" (status), "r" (__NR_exit)
+        : "r0"
+    );
+    // The syscall exit will not return, so no need to handle return value.
+}
+
+int strlen(char *str) {
+    int i = -1;
+    while (true) {
+        if (!str[++i]) return i;
+    }
+}
+
+void *memset(void *s, int c, int n) {
+    unsigned char *p = s; // Cast to unsigned char pointer to work byte by byte
+    while (n--) {
+        *p++ = (unsigned char)c;
+    }
+    return s;
+}
+
+int memcmp(unsigned char* a, unsigned char* b, int len) {
+    int res = false;
+    for (int i = 0; i < len; i++) {
+        if (a[i] != b[i]) res = true;
+    }
+    return res;
+}
+
+void obfuscate(unsigned char *data) {
+    for (int i = 0; i < FLAG_SIZE; i++) {
+        THUMB_START
+        data[i] = (data[i] + i * 42) ^ (i + 3);
+        data[i] = (data[i] << 4) | (data[i] >> 4);
+        THUMB_END
+    }
+}
+
+//void deobfuscate(unsigned char *data) {
+    //for (int i = 0; i < FLAG_SIZE; i++) {
+        //data[i] = (data[i] >> 4) | (data[i] << 4);
+        //data[i] = (data[i] ^ (i + 3)) - i * 42;
+    //}
+//}
+//void main2() {
+    //char* real_flag = "EPFL{On3_Of_My_F1ng3r5_1s_M1ss1ng!!!}";
+    //char flag[FLAG_SIZE+1];
+    //strcpy(flag, real_flag);
+    //obfuscate((unsigned char*)flag);
+    //for (int i = 0; i < FLAG_SIZE; i++) {
+        //printf("0x%hhx, ", flag[i]);
+    //}
+    //deobfuscate((unsigned char*)flag);
+    //printf("%s\n", flag);
+//}
+//
+
+void puts(char *str) {
+    write(1, str, strlen(str));
+}
+
+
+// Function to multiply two numbers using Russian Peasant algorithm
+//
+//unsigned int mymul(unsigned int a, unsigned int b) {
+    //unsigned int result = 0; // Initialize result
+    //while (b > 0) {
+        //if (b & 1) result = result + a;
+        //a = a << 1;
+        //b = b >> 1;
+    //}
+    //return result;
+//}
+
+extern unsigned int mymul(unsigned int a, unsigned int b);
+__asm(
+
+".ascii \"PORCODIO\"\n"
+"mymul:\n"
+"  .make_thumb\n"
+
+"	sub	sp, sp, #16\n"
+"b .+4\n"
+"	str	r0, [sp, #4]\n"
+"b .+4\n"
+"	str	r1, [sp]\n"
+"b .+4\n"
+"	movs	r3, #0\n"
+"b .+4\n"
+"	str	r3, [sp, #12]\n"
+"b .+4\n"
+"	b	.AL27\n"
+"b .+4\n"
+"  .make_thumb\n"
+".AL29:\n"
+        "  .make_thumb\n"
+"	ldr	r3, [sp]\n"
+"b .+4\n"
+"	and	r3, r3, #1\n"
+"b .+4\n"
+"	cmp	r3, #0\n"
+"b .+4\n"
+"	beq	.AL28\n"
+"b .+4\n"
+"	ldr	r2, [sp, #12]\n"
+"b .+4\n"
+"	ldr	r3, [sp, #4]\n"
+"b .+4\n"
+"	add	r3, r3, r2\n"
+"b .+4\n"
+"	str	r3, [sp, #12]\n"
+"b .+4\n"
+"  .make_thumb\n"
+".AL28:\n"
+"  .make_thumb\n"
+"	ldr	r3, [sp, #4]\n"
+"b .+4\n"
+"	lsls	r3, r3, #1\n"
+"b .+4\n"
+"	str	r3, [sp, #4]\n"
+"b .+4\n"
+"	ldr	r3, [sp]\n"
+"b .+4\n"
+"	lsrs	r3, r3, #1\n"
+"b .+4\n"
+"	str	r3, [sp]\n"
+"b .+4\n"
+".AL27:\n"
+"	ldr	r3, [sp]\n"
+"b .+4\n"
+"	cmp	r3, #0\n"
+"b .+4\n"
+"	bne	.AL29\n"
+"b .+4\n"
+"	ldr	r3, [sp, #12]\n"
+"b .+4\n"
+"	mov	r0, r3\n"
+"b .+4\n"
+"	add	sp, sp, #16\n"
+"b .+4\n"
+"	@ sp needed\n"
+"	bx	lr\n"
+".ascii \"PORCODIO\"\n"
+
+".unmake_thumb\n");
+
+
+
+
+unsigned int fixed_input_one[] = {0xf1f9ee56, 0x54a0689f, 0xff50bcbf, 0x9242000c, 0xe22d24fe, 0x9c17fe56, 0x2f51a610, 0x1e8bd55a, 0x9d347227, 0x9d417de5, 0xdf843f13, 0x8b043410, 0x548745f6, 0x63a572cd, 0x3608b93f, 0xc227ea70, 0xdbfadffe, 0x9dd953fd, 0xef8a9327, 0x0a33244b, 0xe41e6742, 0x178f33e7, 0x66b2dd3a, 0x71d8534e, 0x52edd365, 0x66d06655, 0xfe72fbc9, 0x753728ea, 0xa6e15f99, 0x2a8b6ad2, 0x315a69f0, 0xe1884755, 0x5a2e3472, 0x10e343a1, 0x14707190, 0x4ff27f5c, 0xe82d3452, 0x3933cd99, 0x4c664eba, 0x1e5271fc, 0x1f9c608e, 0x299d8bdb, 0x214add4f, 0xd3936e06, 0x9d5d330a, 0xdb186bfd, 0xda56197b, 0xa9c87650, 0xd5cc8db6, 0xd97b1d6e, 0x505c7e49, 0xce4c427d, 0x52749597, 0xe00ea6e6, 0x1bea2189, 0x41bc8354, 0x39afffa0, 0xfb3bb432, 0xfad4404a, 0x263d46ac, 0x01854546, 0x0f05411e, 0xddb6f300, 0x77e827f1, 0xf59df600, 0x4a1579e1, 0xd7e2b841, 0xe79a498e, 0x0ebc883f, 0xf1e4169f, 0x468274e3, 0x92f4838b, 0x309be823, 0xdc73c774, 0x1e936432, 0x4c2a2974, 0x628d6867, 0x068de1cb, 0x79682ce5, 0xc9c04c99, 0xfcbb81a8, 0xfe07e141, 0x55ec781f, 0xc11bf17c, 0x48385e50, 0xdb86b81b, 0xc7347730, 0x56d3469b, 0xb58263e8, 0x6a0d8dc1, 0x2536b84d, 0xfd9234b2, 0xf75e6bb3, 0xb9827451, 0x61dee6fd, 0x18da4438, 0x4132e759, 0xb95d4ea3, 0xc10834c3, 0xa85194dc, 0x2fccc04e, 0x3df76302, 0x41af837e, 0x8d68074d, 0x0a07b237, 0x02558da4, 0xc452d30b, 0x6d75d0a5, 0x3736590a, 0x9b69a58b, 0xfe4272ff, 0x0c41bbb1, 0x6f94f274, 0x3363efae, 0x68bcce38, 0x04a45db9, 0xd59efdd2, 0x673449ed, 0xb91ba67e, 0x1f89dae2, 0x494dc2fc, 0xf0a2c8cf, 0x427096af, 0x678e44d3, 0xd251a51b, 0x30085c79, 0x41dee84a, 0x243638a4, 0xab33edab, 0x46521421, 0x9a289730, 0x2c2c41f4, 0x44e6fca6, 0x24ee37a6, 0xdb8225c4, 0x5ea68a46, 0x07ddcb54, 0x48f0b3d0, 0xfd5685b0, 0x34a273ca, 0x4e3c30d9, 0xc2640ce0, 0xd99c8159, 0x40369c26, 0x242e5d95, 0x83c0a9dd, 0xc66058f7, 0xbc6179e3, 0x3ed01954, 0xa9b7772c, 0xc71831f9, 0xf3fac7c8, 0x737ff751, 0x547b953c, 0xf410c354, 0xe97a6f45, 0x5b7dfa16, 0x0a6f1eea, 0x6bf307b4, 0x49d92dcb, 0x3fbd1a0b, 0xb7c0dace, 0x9e009a3f, 0x24270a48, 0x2cbdc0f3, 0x32ab5ff5, 0x6e099e07, 0x98aefbe4, 0xe198bc46, 0xfa49df99, 0x58e8dbdf, 0xcec6a7d7, 0x9955661a, 0x41206a5b, 0x7e25cdb0, 0x78522830, 0xb948c103, 0xfc0cc092, 0xbc6574bf, 0x3166a170, 0x2f97ee98, 0x6a559da1, 0xee26dec7, 0xb5c98a9e, 0x35a36667, 0x15292041, 0x0ae93ced, 0xe384674f, 0xc07025c8, 0xd7a91638, 0x92711dcf, 0xaf4868b9, 0xc3fd16de, 0xf72d5524, 0xb0723dce, 0xfb215290, 0xe1dcd1b1, 0x3db835eb, 0xa4501234, 0xcab4898c, 0xb907f7d2, 0xac80dbf8, 0x82388ccc, 0x457234dc, 0x0babe277, 0xee778153, 0xdb6ecd1b, 0x57680c58, 0x5c541d30, 0xe3570360, 0x33d73d34, 0xaaa5952d, 0xfbb9ce8f, 0x2d3383c9, 0x045e0c5e, 0x050b669b, 0x8d59dbb6, 0xd6c6a48c, 0xaa0be952, 0x76c4321f, 0x8c20573b, 0x8c3c3627, 0x1dc5693e, 0xfc539f84, 0xcb8bdfec, 0x2ffeaa2f, 0x9c9f22af, 0xd1897cbd, 0x3bf3809d, 0xeaddb2e4, 0xd17a007f, 0x4799169a, 0x88cf2067, 0xb98055fb, 0x034f5f4e, 0x82f6011f, 0x43255a29, 0xf54b4185, 0xde7e76e0, 0x504cf319, 0x4f2fc3ed, 0x89a4c68b, 0x7c831523, 0x73bfa272, 0xecd0b968, 0xaa4fd694, 0x732387f1, 0x4e1c4ef6, 0xb985dbf5, 0x685d5471, 0xe7489b87, 0x93827995, 0x309edddf, 0x20c84813, 0x9fe6d905, 0x7c0b32e6, 0x1d0de12e, 0xe3c00c62, 0xe6c83eb1, 0x6d2260c5, 0x20cc7df2, 0xcd9833ea, 0x79ce7f75, 0x4bff245d, 0xde3ee37d, 0x57c893e9, 0x061b61d9, 0x8c478fdf, 0xee44725b, 0x799b0c2f, 0x44ca20cd, 0x3226ba45, 0x7ed0fb59, 0xeb2d552d, 0x65da7049, 0xb4f2bdcf, 0xf1f9ee56, 0x54a0689f, 0xff50bcbf, 0x9242000c, 0xe22d24fe, 0x9c17fe56, 0x2f51a610, 0x1e8bd55a, 0x9d347227, 0x9d417de5, 0xdf843f13, 0x8b043410, 0x548745f6, 0x63a572cd, 0x3608b93f, 0xc227ea70, 0xdbfadffe, 0x9dd953fd, 0xef8a9327, 0x0a33244b, 0xe41e6742, 0x178f33e7, 0x66b2dd3a, 0x71d8534e, 0x52edd365, 0x66d06655, 0xfe72fbc9, 0x753728ea, 0xa6e15f99, 0x2a8b6ad2, 0x315a69f0, 0xe1884755, 0x5a2e3472, 0x10e343a1, 0x14707190, 0x4ff27f5c, 0xe82d3452, 0x3933cd99, 0x4c664eba, 0x1e5271fc, 0x1f9c608e, 0x299d8bdb, 0x214add4f, 0xd3936e06, 0x9d5d330a, 0xdb186bfd, 0xda56197b, 0xa9c87650, 0xd5cc8db6, 0xd97b1d6e, 0x505c7e49, 0xce4c427d, 0x52749597, 0xe00ea6e6, 0x1bea2189, 0x41bc8354, 0x39afffa0, 0xfb3bb432, 0xfad4404a, 0x263d46ac, 0x01854546, 0x0f05411e, 0xddb6f300, 0x77e827f1, 0xf59df600, 0x4a1579e1, 0xd7e2b841, 0xe79a498e, 0x0ebc883f, 0xf1e4169f, 0x468274e3, 0x92f4838b, 0x309be823, 0xdc73c774, 0x1e936432, 0x4c2a2974, 0x628d6867, 0x068de1cb, 0x79682ce5, 0xc9c04c99, 0xfcbb81a8, 0xfe07e141, 0x55ec781f, 0xc11bf17c, 0x48385e50, 0xdb86b81b, 0xc7347730, 0x56d3469b, 0xb58263e8, 0x6a0d8dc1, 0x2536b84d, 0xfd9234b2, 0xf75e6bb3, 0xb9827451, 0x61dee6fd, 0x18da4438, 0x4132e759, 0xb95d4ea3, 0xc10834c3, 0xa85194dc, 0x2fccc04e, 0x3df76302, 0x41af837e, 0x8d68074d, 0x0a07b237, 0x02558da4, 0xc452d30b, 0x6d75d0a5, 0x3736590a, 0x9b69a58b, 0xfe4272ff, 0x0c41bbb1, 0x6f94f274, 0x3363efae, 0x68bcce38, 0x04a45db9, 0xd59efdd2, 0x673449ed, 0xb91ba67e, 0x1f89dae2, 0x494dc2fc, 0xf0a2c8cf, 0x427096af, 0x678e44d3, 0xd251a51b, 0xd251a51b, 0xd251a51b, 0xd251a51b, 0xd251a51b, 0xd251a51b, 0xd251a51b, 0xd251a51b, 0xd251a51b};
+
+unsigned int three_final_result[FLAG_SIZE*20];
+unsigned int (*new_switch)(unsigned int, unsigned int);
+
+void stage_three() {
+    char input[FLAG_SIZE+4] = {0}; // EPFL{ABCDEF_I_dont_know_what_to_flag}
+    unsigned char fixed_input[FLAG_SIZE] = {0xf1, 0xf9, 0xee, 0x56, 0x54, 0xa0, 0x68, 0x9f, 0xff, 0x50, 0xbc, 0xbf, 0x92, 0x42, 0x00, 0x0c, 0xe2, 0x2d, 0x24, 0xfe, 0x9c, 0x17, 0xfe, 0x56, 0x2f, 0x51, 0xa6, 0x10, 0x1e, 0x8b, 0xd5, 0x5a, 0x9d, 0x34, 0x72, 0x27, 0x9d, 0x41};
+    read(0, input, FLAG_SIZE);
+
+    unsigned int result = 0;
+    for (int i = 0; i < FLAG_SIZE*8; i++) {
+        int bit = (input [i / 8]) & (1 << (i % 8));
+        if (bit) {
+            new_switch = mymul + 1;
+        } else {
+            new_switch = mymul;
+        }
+        result = new_switch(fixed_input_one[i], fixed_input_one[i+1]);
+        three_final_result[i] = result;
+    }
+
+    //memcmp(three_final_result, 
+
+    write(1, three_final_result, FLAG_SIZE*1);
+}
+
+
+
+
+
+int check_flag(unsigned char *input) {
+
+    THUMB_START
+
+    obfuscate((unsigned char*)input);
+
+    THUMB_END
+
+    return memcmp(enc_flag, input, FLAG_SIZE) == 0;
+}
+
+//int func1(unsigned int input) {
+    //return (input ^ 0x12345678);
+//}
+__asm(
+"fake_func2:\n"
+"   str	r0, [sp, #4]\n"
+"   ldr	r2, [sp, #4]\n"
+"   movw	r3, #22136\n"
+"   movt	r3, 4660\n"
+"   eors	r3, r3, r2\n"
+"   mov	r0, r3\n"
+"   add	sp, sp, #8\n"
+"func1:\n"
+"   .make_thumb\n"
+"   add r0, #1\n"
+"   sub	sp, sp, #8\n"
+"   str	r0, [sp, #4]\n"
+"   ldr	r2, [sp, #4]\n"
+"   movw	r3, #22136\n"
+"   movt	r3, 4660\n"
+"   eors	r3, r3, r2\n"
+"   mov	r0, r3\n"
+"   add	sp, sp, #8\n"
+"   @ sp needed\n"
+"   bx	lr\n"
+"   .align 2\n"
+"   .unmake_thumb\n");
+
+
+int func2(unsigned int input) {
+    int result = 0x12345678 - input;
+    return result;
+}
+
+int func3(unsigned int input) {
+    unsigned int byte1 = ((input & (0xff << 0)) >> 0);
+    unsigned int byte2 = ((input & (0xff << 8)) >> 8);
+    unsigned int byte3 = ((input & (0xff << 16)) >> 16);
+    unsigned int byte4 = ((input & (0xff << 24)) >> 24);
+    unsigned int res = 0;
+    res = (byte1 << 24) + (byte2 << 16) + (byte3 << 8) + byte4;
+    return res;
+}
+
+
+
+//int defunc2(unsigned int input) {
+    //int result = 0x12345678 - input;
+    //return result;
+//}
+//void deobf_stagetwo(char* input) {
+    //for (int i = 0; i <= FLAG_SIZE / 4; i++) {
+        //int wow = ((int*)input)[i];
+        //if (i % 4 == 0)
+            //((int*)input)[i] = func1(wow);
+        //if (i % 4 == 1)
+            //((int*)input)[i] = func2(wow);
+        //if (i % 4 == 2)
+            //((int*)input)[i] = func3(wow);
+        //if (i % 4 == 3)
+            //((int*)input)[i] = wow;
+    //}
+//}
+
+void stage_two() {
+    char input[FLAG_SIZE+4] = {0}; // EPFL{W0w_1_d1d_n0t_knOw_ARm_w4s_bad!}
+    int result[FLAG_SIZE+4] = {0};
+
+    puts("Not so bad, but what about now?\n");
+
+    read(0, input, FLAG_SIZE);
+
+
+    for (int i = 0; i <= FLAG_SIZE / 4; i++) {
+        int wow = ((int*)input)[i];
+        if (i % 4 == 0) {
+            // result[i] = func1(wow);
+            asm volatile (
+                "mov r0, %1\n"
+                "ldr r10, =func1\n"
+                		"push {r10}\n"
+                        "pop {r10}\n"
+                        "// opaque predicate for ghidra\n"
+                        "mul r11, r12, r12\n" // r11 = (r12**2 + r12) % 1 == 0
+                        "add r11, r12\n"
+                        "ands r11, r11, #1\n"
+                        "beq .+12  // always false\n"
+                        "    add r10, r10, #27\n"
+                        "    ldr r10, =fake_func2\n"
+                        "add r10, #5\n"
+                        "blx r10\n"
+                "mov %0, r0\n"   
+                : "=r" (result[i])
+                : "r" (wow)
+                : "r0","r1","r2","r3","r4","r5","r6","r10", "lr","cc","memory"
+            );
+        }
+
+
+
+        if (i % 4 == 1)
+            result[i] = func2(wow);
+        if (i % 4 == 2)
+            result[i] = func3(wow);
+        if (i % 4 == 3)
+            result[i] = wow;
+    }
+
+    int valid = memcmp(enc_flag2, result, FLAG_SIZE);
+    if (!valid) {
+        puts("Correct!\n");
+        //stage_three();
+    } else {
+        puts("Sorry, try again.\n");
+    }
+}
+
+void stage_one() {
+    char input[FLAG_SIZE+1] = {0};
+
+    puts("Enter what you think the following means:\n");
+
+    THUMB_START
+
+    read(0, input, FLAG_SIZE);
+
+    int valid = check_flag((unsigned char*) input);
+
+    THUMB_END
+
+
+    if (valid) {
+        puts("Correct!\n");
+        stage_two();
+    } else {
+        puts("Sorry, try again.\n");
+    }
+}
+
+void _start() {
+
+    puts("A long, long time ago...\n");
+    puts("A very powerful magician was popular over his kingdom.\n");
+    puts("His abilities to understand ARM scrolls was unrivaled.\n");
+    puts("His signature spell, \x1b[31;1m\"Disassemble!\"\x1b[0m, was simply devastating.\n");
+    puts("\n");
+    puts("He used to say all the time: ARM scrolls are always aligned, you see? \x1b[31;1m\"Disassemble!\"\x1b[0m will never fail!\n");
+    puts("Consumed by hubris and pride, he thought himself as invincible.\n");
+    puts("Until one day, Ral, the ancient ARM divinity, grew tired of him and decided to teach him a lesson.\n");
+    puts("The skies turned red, the animals hid in their nests. Ral produced a scroll that would stop the magician.\n");
+    puts("\"You poor mortal,\" thundered Ral - \"I will break your little spell disassembly in TWO different ways!\"\n");
+    puts("The magician received a scroll so incomprehensible and confusing, he went insane.\n");
+    puts("\n");
+    puts("People always wondered, Ral is a fair divinity. He would never give an impossible scroll to anyone. There must have been a way to read it!");
+    puts("What about you, though? Can you read the scroll, without using \x1b[31;1m\"Disassemble!\"\x1b[0m ?\n\n");
+
+    stage_one();
+    //stage_two();
+    //stage_three();
+
+    exit(0);
+}
